@@ -23,7 +23,9 @@
             <el-form-item prop="code">
               <div class="form-inline-input">
                 <div class="code-box" id="code-box">
-                  <input ref="coderef" type="text" name="code" class="code-input" />
+                  <label>
+                    <input ref="coderef" type="text" name="code" class="code-input" />
+                  </label>
                   <p></p>
                   <span style="color:#909399">
                      拖动验证
@@ -82,10 +84,11 @@
          }
         },
       methods:{
-        submitForm(ruleid){
 
+        //提交表单
+        submitForm(ruleid){
            let code=this.$refs.coderef.value;
-           if(code==null||code==""){
+           if(code==null||code===""){
              const h = this.$createElement;
              this.$notify({
                title: '提示信息：',
@@ -98,14 +101,14 @@
              //将用户名和密码的明文进行加密
              par.loginname=this.ruleForm.username;
              par.password=this.ruleForm.password;
-             if(this.ruleForm.username==""||this.ruleForm.username==null){
+             if(this.ruleForm.username===""||this.ruleForm.username==null){
                this.$notify.info({
                  title: '提示',
                  message: '请填写用户名'
                });
                return;
              }
-             if(this.ruleForm.password==""||this.ruleForm.password==null){
+             if(this.ruleForm.password===""||this.ruleForm.password==null){
                this.$notify.info({
                  title: '提示',
                  message: '请填写密码'
@@ -114,54 +117,54 @@
              }
              par.code=this.$refs.coderef.value;
              //转JSON串
-             let canshu=this.toAes.encrypt(JSON.stringify(par));
-             let params={canshu:canshu};
-             let qs=require("qs");
-            //打开登陆进度条
+             // let canshu=this.toAes.encrypt(JSON.stringify(par));
+             // let params={canshu:canshu};
+             // let qs=require("qs");
+             //打开登陆进度条
              this.$data.jindustyle.display='block';
               //每0.1秒更新一下进度
-             var timer=setInterval(()=>{
+             let timer=setInterval(()=>{
                 let pp=this.$data.percent+10;
                 if(pp>=100){
                   pp=99;
                 }
                this.$data.percent=pp;
-             },100)
-
-             this.$axios.post(this.domain.serverpath+"login",qs.stringify(params)).then((response)=>{
-
-                let respo=response.data;
-                if(respo.success=="ok"){
-                  //存储token到浏览器端的缓存中，
-                  window.localStorage.setItem("token",respo.token);
-                  //关闭加载窗
-                  this.$data.percent=100
-                  //隐藏进度条
-                  this.$data.jindustyle.display='none'
-                  //关闭定时
-                  clearInterval(timer)
-
+             },100);
+             //从cookie中取出某一个名称的Cookie的值
+             par.codekey=this.Cookies.get("authcode");
+             this.$axios.post(this.domain.ssoserverpath+"login",par).then((response)=>{
+               let respo=response.data;
+               if(respo.code===200){
+                 //存储token(加密票据)到vuex中
+                 this.$store.state.token=response.data.token;
+                 //存储登录用户信息到vuex中
+                 this.$store.state.userInfo=response.data.result;
+                 //本地session存储，防止刷新页面后信息丢失
+                 //window.sessionStorage.setItem("userInfo",JSON.stringify(response.data.result));
+                 //关闭加载窗
+                 this.$data.percent=100;
+                 //隐藏进度条
+                 this.$data.jindustyle.display='none';
+                 //关闭定时
+                 clearInterval(timer);
                   //跳转到首页界面
-                  this.domain.userinfo.username=respo.result.username
-                  this.domain.userinfo.userid=respo.result.id
+                  //this.domain.userinfo.username=respo.result.username;
+                  //this.domain.userinfo.userid=respo.result.id;
                   //将用户ID存入到全局的VUE对象中
-
-                  this.$router.push({path:'/view/shouye/shouye',query:{username:respo.result.username,userid:respo.result.id}});
+                 this.$router.push({path:'/view/shouye/index',query:{username:respo.result.userName,userid:respo.result.id}});
                 }else if(respo.error!=null){
                   //关闭加载窗
-                  //关闭加载窗
-                  this.$data.percent=100
+                  this.$data.percent=100;
                   //隐藏进度条
-                  this.$data.jindustyle.display='none'
+                  this.$data.jindustyle.display='none';
                   //关闭定时
-                  clearInterval(timer)
+                  clearInterval(timer);
                   this.$notify.error({
                     title: '提示',
                     duration:1000,
                     message: respo.error
                   });
                 }
-
              }).catch((error)=>{
                //关闭加载窗
                this.$data.percent=100;
@@ -174,16 +177,14 @@
                  message: '出错了~_~，请联系管理员！'
                });
              })
-
-
            }
-
         },
-          //拖动验证start
+
+        //拖动验证start
         getOffset(box,direction){
-          var setDirection = (direction == 'top') ? 'offsetTop' : 'offsetLeft' ;
-          var offset = box[setDirection];
-          var parentBox = box.offsetParent;
+          let setDirection = (direction === 'top') ? 'offsetTop' : 'offsetLeft' ;
+          let offset = box[setDirection];
+          let parentBox = box.offsetParent;
           while(parentBox){
             offset+=parentBox[setDirection];
             parentBox = parentBox.offsetParent;
@@ -191,22 +192,23 @@
           parentBox = null;
           return parseInt(offset);
         },
+
         moveCode(code,_this){
-          var fn = {codeVluae : code};
-          var box = document.querySelector("#code-box"),
+          let fn = {codeVluae : code};
+          let box = document.querySelector("#code-box"),
             progress = box.querySelector("p"),
             codeInput = box.querySelector('.code-input'),
             evenBox = box.querySelector("span");
            //默认事件
-          var boxEven = ['mousedown','mousemove','mouseup'];
+          let boxEven = ['mousedown','mousemove','mouseup'];
            //改变手机端与pc事件类型
           if(typeof document.ontouchstart == 'object'){
             boxEven = ['touchstart','touchmove','touchend'];
           }
-          var goX,offsetLeft,deviation,evenWidth,endX;
+          let goX,offsetLeft,deviation,evenWidth,endX;
           function moveFn(e){
             e.preventDefault();
-            e = (boxEven['0'] == 'touchstart') ? e.touches[0] : e || window.event;
+            e = (boxEven['0'] === 'touchstart') ? e.touches[0] : e || window.event;
             endX = e.clientX - goX;
             endX = (endX > 0) ? (endX > evenWidth) ? evenWidth : endX : 0;
             if(endX > evenWidth * 0.7){
@@ -222,10 +224,10 @@
           function removeFn() {
             document.removeEventListener(boxEven['2'],removeFn,false);
             document.removeEventListener(boxEven['1'],moveFn,false);
-            if(endX > evenWidth * 0.7){
+            if(endX > evenWidth * 0.8){
               progress.innerText = '验证成功';
               progress.style.width = evenWidth+deviation+'px';
-              evenBox.style.left = evenWidth+'px'
+              evenBox.style.left = evenWidth+'px';
               codeInput.value = fn.codeVluae;
               evenBox.onmousedown = null;
               _this.ruleForm.verification = true;
@@ -236,20 +238,20 @@
               progress.style.width = '0px';
               evenBox.style.left = '0px';
             }
-          };
+          }
           function getOffset(box,direction){
-            var setDirection = (direction == 'top') ? 'offsetTop' : 'offsetLeft' ;
-            var offset = box[setDirection];
-            var parentBox = box.offsetParent;
+            let setDirection = (direction === 'top') ? 'offsetTop' : 'offsetLeft' ;
+            let offset = box[setDirection];
+            let parentBox = box.offsetParent;
             while(parentBox){
               offset+=parentBox[setDirection];
               parentBox = parentBox.offsetParent;
             }
             parentBox = null;
             return parseInt(offset);
-          };
+          }
           evenBox.addEventListener(boxEven['0'], function(e) {
-            e = (boxEven['0'] == 'touchstart') ? e.touches[0] : e || window.event;
+            e = (boxEven['0'] === 'touchstart') ? e.touches[0] : e || window.event;
             goX = e.clientX,
               offsetLeft = getOffset(box,'left'),
               deviation = this.clientWidth,
@@ -261,12 +263,12 @@
           fn.setCode = function(code){
             if(code)
               fn.codeVluae = code;
-          }
+          };
           fn.getCode = function(){
             return fn.codeVluae;
-          }
+          };
           fn.resetCode = function(){
-            alert("====")
+            alert("====");
             evenBox.removeAttribute('style');
             progress.removeAttribute('style');
             codeInput.value = '';
@@ -275,33 +277,25 @@
         }//拖动验证end
 
       },
+
       mounted(){
-        var _this = this;
-        var code = "";
+        let _this = this;
+        let code = "";
         //从后台获取滑动验证码
         //参数 url 访问参数
-        this.$axios.post(this.domain.serverpath+'getCode').then((response)=>{
-           code=response.data.result;
-           //向浏览器写一个Cookie
-           document.cookie = 'testCookies' + "=" + response.data.token + "; " + -1;
-           _this.moveCode(code,_this);
+        this.$axios.post(this.domain.ssoserverpath+'getCode').then((response)=>{
+          code=response.data.result;
+          //页面获取code码，滑动生效
+          _this.moveCode(code,_this);
         }).catch((error)=>{
-
-        })
-
-//});
+        });
       }
+
     }
 </script>
 
 <style scoped>
-/*  .login-wrap{
-    position: relative;
-    width:100%;
-    height:100%;
-    background-image: url(../../assets/login-bg.jpg);
-    background-size: 100%;
-  }*/
+
   .ms-title{
     width:100%;
     line-height: 50px;
@@ -339,114 +333,114 @@
   }
 
   /** 滑动验证start **/
-.form-inline-input{
-  border:1px solid #dadada;
-  border-radius:5px;
-}
-.form-inline-input input,
-.code-box{
-  padding: 0 3px;
-  width: 290px;
-  height: 40px;
-  color: #fff;
-  text-shadow: 0px 0px 0px black;
-  background: #efefef;
-  border: 0;
-  border-radius: 5px;
-  outline: none;
-}
-.code-box{
-  position: relative;
-}
-.code-box p,
-.code-box span{
-  display:block;
-  position: absolute;
-  left: 0;
-  height: 40px;
-  text-align: center;
-  line-height: 40px;
-  border-radius: 5px;
-  padding:0;
-  margin:0;
-}
-.code-box span{
-  width: 40px;
-  background-color:#fff;
-  font-size: 16px;
-  cursor: pointer;
-  margin-right:1px;
-}
-.code-box p{
-  width: 0;
-  background-color: #FFFF99;
-  overflow: hidden;
-  text-indent: -20px;
-  transition: background 1s ease-in;
-}
-.code-box .code-input{
-  display: none;
-}
-.code-box .code-input{
-  display: none;
-}
-.form-inline-input{
-  border:1px solid #dadada;
-  border-radius:5px;
-}
-.form-inline-input input,
-.code-box{
-  padding: 0 3px;
-  width: 285px;
-  height: 40px;
-  color: #fff;
-  text-shadow: 0px 0px 0px black;
-  background: #efefef;
-  border: 0;
-  border-radius: 5px;
-  outline: none;
-}
-.code-box{
-  position: relative;
-}
-.code-box p,
-.code-box span{
-  display:block;
-  position: absolute;
-  left: 0;
-  height: 40px;
-  text-align: center;
-  line-height: 40px;
-  border-radius: 5px;
-  padding:0;
-  margin:0;
-}
-.code-box span{
-  width: 70px;
-  background-color:#fff;
-  font-size: 12px;
-  cursor: pointer;
-  margin-right:1px;
-}
-.code-box p{
-  width: 0;
-  background-color: #F5F7FA;
-  overflow: hidden;
-  text-indent: -20px;
-  transition: background 1s ease-in;
-}
-.code-box .code-input{
-  display: none;
-}
-.code-box .code-input{
-  display: none;
-}
-.p-title{
-  color: white;
-  font-size: 16px;
-  text-align: left;
-  padding-left: 20px;
-  font-style:italic
-}
-/** 滑动验证end **/
+  .form-inline-input{
+    border:1px solid #dadada;
+    border-radius:5px;
+  }
+  .form-inline-input input,
+  .code-box{
+    padding: 0 3px;
+    width: 290px;
+    height: 40px;
+    color: #fff;
+    text-shadow: 0px 0px 0px black;
+    background: #efefef;
+    border: 0;
+    border-radius: 5px;
+    outline: none;
+  }
+  .code-box{
+    position: relative;
+  }
+  .code-box p,
+  .code-box span{
+    display:block;
+    position: absolute;
+    left: 0;
+    height: 40px;
+    text-align: center;
+    line-height: 40px;
+    border-radius: 5px;
+    padding:0;
+    margin:0;
+  }
+  .code-box span{
+    width: 40px;
+    background-color:#fff;
+    font-size: 16px;
+    cursor: pointer;
+    margin-right:1px;
+  }
+  .code-box p{
+    width: 0;
+    background-color: #FFFF99;
+    overflow: hidden;
+    text-indent: -20px;
+    transition: background 1s ease-in;
+  }
+  .code-box .code-input{
+    display: none;
+  }
+  .code-box .code-input{
+    display: none;
+  }
+  .form-inline-input{
+    border:1px solid #dadada;
+    border-radius:5px;
+  }
+  .form-inline-input input,
+  .code-box{
+    padding: 0 3px;
+    width: 285px;
+    height: 40px;
+    color: #fff;
+    text-shadow: 0px 0px 0px black;
+    background: #efefef;
+    border: 0;
+    border-radius: 5px;
+    outline: none;
+  }
+  .code-box{
+    position: relative;
+  }
+  .code-box p,
+  .code-box span{
+    display:block;
+    position: absolute;
+    left: 0;
+    height: 40px;
+    text-align: center;
+    line-height: 40px;
+    border-radius: 5px;
+    padding:0;
+    margin:0;
+  }
+  .code-box span{
+    width: 70px;
+    background-color:#fff;
+    font-size: 12px;
+    cursor: pointer;
+    margin-right:1px;
+  }
+  .code-box p{
+    width: 0;
+    background-color: #F5F7FA;
+    overflow: hidden;
+    text-indent: -20px;
+    transition: background 1s ease-in;
+  }
+  .code-box .code-input{
+    display: none;
+  }
+  .code-box .code-input{
+    display: none;
+  }
+  .p-title{
+    color: white;
+    font-size: 16px;
+    text-align: left;
+    padding-left: 20px;
+    font-style:italic
+  }
+  /** 滑动验证end **/
 </style>
