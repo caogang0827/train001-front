@@ -41,7 +41,7 @@
     </el-dialog>
 
     <el-dialog title="用户信息" :visible.sync="flag1" style="width: 1400px">
-      <el-form >
+      <el-form>
         <el-form-item label="角色 " :label-width="formLabelWidth">
           <el-select v-model="roleId" filterable placeholder="请选择角色">
             <el-option
@@ -60,9 +60,7 @@
     </el-dialog>
 
 
-
-
-  <span style="margin-top: 10px;margin-bottom: 10px;margin-left: 20px">
+    <span style="margin-top: 10px;margin-bottom: 10px;margin-left: 20px">
     用户名：
   <el-input v-model="queryEntity.iname" placeholder="请输入内容" style="width: 150px"></el-input>
   创建时间：
@@ -80,67 +78,85 @@
       <el-option label="全部" value=""></el-option>
     </el-select>
     &nbsp;
-    <el-button type="primary"  size="small" @click="find">查询</el-button>
-    <el-button type="primary"  size="small" @click="toadd">添加用户</el-button>
-    <el-button type="danger"  size="small" @click="ps">批量删除</el-button>
+    <el-button type="primary" size="small" @click="find">查询</el-button>
+    <el-button type="primary" size="small" @click="toadd">添加用户</el-button>
+    <el-button type="danger" size="small" @click="ps">批量删除</el-button>
+    <el-button type="primary" size="small" @click="exportUser"><i class="el-icon-upload2"></i>导出数据</el-button>
+      <!--    <el-button type="primary"  size="small" @click="importUser"><i class="el-icon-download"></i>导入数据</el-button>-->
+    <el-upload
+      class="upload-demo"
+      action="http://localhost:10001/user/addExcel"
+      :on-preview="handlePreview"
+      :on-remove="handleRemove"
+      :before-remove="beforeRemove"
+      multiple
+      :on-success="handleSuccess"
+      :limit="3"
+      :on-exceed="handleExceed"
+      :file-list="fileList">
+      <el-button size="small" type="primary">导入数据</el-button>
+      <!--      <div slot="tip" class="el-upload__tip">只能上传jpg/png文件，且不超过500kb</div>-->
+    </el-upload>
+
   </span>
-  <el-table
-    :data="tableData"
-    height="520"
-    style="width: 100%;margin-top: 10px"
-    @selection-change="handleSelectionChange"
-  >
-    <el-table-column
-      type="selection"
-      width="80">
-    </el-table-column>
-    <el-table-column
-      prop="username"
-      label="用户名"
-      width="130">
-    </el-table-column>
-    <el-table-column
-      prop="loginname"
-      label="登录名"
-      width="130">
-    </el-table-column>
-    <el-table-column
-      label="性别"
-      width="80">
-      <template slot-scope="scope">{{ scope.row.sex==1?'男':'女'}}</template>
-    </el-table-column>
-    <el-table-column
-      prop="tel"
-      label="电话"
-      width="130">
-    </el-table-column>
-    <el-table-column
-      label="创建日期"
-      width="130">
-      <template slot-scope="scope">{{ scope.row.createdtime.substring(0,10)}}</template>
-    </el-table-column>
-    <el-table-column
-      label="头像"
-      width="100">
-      <template slot-scope="scope">
-        <el-image style="width: 50px; height: 50px" :src="'http://localhost:9999/'+scope.row.url">{{scope.row.url}}</el-image>
-      </template>
-    </el-table-column>
-    <el-table-column
-      prop="roleInfo.rolename"
-      label="角色"
-      width="130">
-    </el-table-column>
-    <el-table-column
-      label="操作"
-      width="370">
-      <template slot-scope="scope">
-        <el-button type="danger" round size="small" @click="todelete(scope.row.id)">删除</el-button>
-        <el-button type="primary" round size="small" @click="toupdate(scope.row)">编辑</el-button>
-        <el-button type="success" round size="small" @click="tobind(scope.row)">绑定角色</el-button>
-      </template>
-    </el-table-column>
-  </el-table>
+    <el-table
+      :data="tableData"
+      height="520"
+      style="width: 100%;margin-top: 10px"
+      @selection-change="handleSelectionChange"
+    >
+      <el-table-column
+        type="selection"
+        width="80">
+      </el-table-column>
+      <el-table-column
+        prop="username"
+        label="用户名"
+        width="130">
+      </el-table-column>
+      <el-table-column
+        prop="loginname"
+        label="登录名"
+        width="130">
+      </el-table-column>
+      <el-table-column
+        label="性别"
+        width="80">
+        <template slot-scope="scope">{{ scope.row.sex==1?'男':'女'}}</template>
+      </el-table-column>
+      <el-table-column
+        prop="tel"
+        label="电话"
+        width="130">
+      </el-table-column>
+      <el-table-column
+        label="创建日期"
+        width="130">
+        <template slot-scope="scope">{{ scope.row.createdtime.substring(0,10)}}</template>
+      </el-table-column>
+      <el-table-column
+        label="头像"
+        width="100">
+        <template slot-scope="scope">
+          <el-image style="width: 50px; height: 50px" :src="'http://localhost:9999/'+scope.row.url">{{scope.row.url}}
+          </el-image>
+        </template>
+      </el-table-column>
+      <el-table-column
+        prop="roleInfo.rolename"
+        label="角色"
+        width="130">
+      </el-table-column>
+      <el-table-column
+        label="操作"
+        width="370">
+        <template slot-scope="scope">
+          <el-button type="danger" round size="small" @click="todelete(scope.row.id)">删除</el-button>
+          <el-button type="primary" round size="small" @click="toupdate(scope.row)">编辑</el-button>
+          <el-button type="success" round size="small" @click="tobind(scope.row)">绑定角色</el-button>
+        </template>
+      </el-table-column>
+    </el-table>
     <el-pagination
       background
       @size-change="handleSizeChange"
@@ -172,71 +188,91 @@
         },
         tableData: [],
         roleList: [],
-        total:100,
-        ids:[],
-        flag:false,
-        flag1:false,
+        total: 100,
+        ids: [],
+        flag: false,
+        flag1: false,
         userInfo: {},
         formLabelWidth: '100px',
         imageUrl: '',
         roleId: '',
         userId: '',
+        fileList: [],
       }
     },
 
     methods: {
 
+      //上传文件
+      handleSuccess(file, fileList) {
+        console.log(file, fileList);
+      },
+      handleRemove(file, fileList) {
+        console.log(file, fileList);
+      },
+      handlePreview(file) {
+        console.log(file);
+      },
+      handleExceed(files, fileList) {
+        this.$message.warning(`当前限制选择 3 个文件，本次选择了 ${files.length} 个文件，共选择了 ${files.length + fileList.length} 个文件`);
+      },
+      beforeRemove(file, fileList) {
+        return this.$confirm(`确定移除 ${file.name}？`);
+      },
+
       //查询所有角色
-      findAllRole:function(){
-        this.$axios.post(this.domain.serverpath+'role/listRole?find=1').then((response)=>{
+      findAllRole: function () {
+        this.$axios.post(this.domain.serverpath + 'role/listRole?find=1').then((response) => {
           this.roleList = response.data.content;
-        }).catch(()=>{})
+        }).catch(() => {
+        })
       },
 
       //分页查询
-      pageAll:function(page){
-        if(this.createdtime[0]!==""&&this.createdtime[1]!==""){
+      pageAll: function (page) {
+        if (this.createdtime[0] !== "" && this.createdtime[1] !== "") {
           this.queryEntity.start = this.createdtime[0];
           this.queryEntity.end = this.createdtime[1];
         }
-          this.queryEntity.page = page - 1;
-        this.$axios.post(this.domain.serverpath+'user/listUser',this.queryEntity).then((response)=>{
+        this.queryEntity.page = page - 1;
+        this.$axios.post(this.domain.serverpath + 'user/listUser', this.queryEntity).then((response) => {
           this.queryEntity.page = response.data.number;
           this.tableData = response.data.content;
           this.total = response.data.totalElements;
           this.queryEntity.pageSize = response.data.size;
-          }).catch((error)=>{})
+        }).catch((error) => {
+        })
       },
 
       //获取对象数组
       handleSelectionChange: function (data) {
-        this.ids = data.map(element=>element.id);
+        this.ids = data.map(element => element.id);
       },
 
       //查询
-      find:function () {
+      find: function () {
         this.pageAll(1);
       },
 
       //分页条数改变
-      handleSizeChange:function (data) {
+      handleSizeChange: function (data) {
         this.queryEntity.pageSize = data;
         this.pageAll(1);
       },
 
       //删除
-      todelete:function (id) {
-        if (confirm("确认删除？")){
-          this.$axios.post(this.domain.serverpath+'user/deleteUser?id='+id).then((response)=>{
-            if(response.data){
+      todelete: function (id) {
+        if (confirm("确认删除？")) {
+          this.$axios.post(this.domain.serverpath + 'user/deleteUser?id=' + id).then((response) => {
+            if (response.data) {
               this.$message({
                 message: '删除成功！',
                 type: 'success'
               });
             }
             this.pageAll(1);
-          }).catch((response)=>{
-            if(response.data===undefined){
+          }).catch((response) => {
+            if (response.data === undefined) {
               this.$notify.error({
                 title: '错误',
                 message: '您没有此项权限！'
@@ -247,16 +283,16 @@
       },
 
       //批量删除
-      ps:function () {
-        if(this.ids.length===0){
+      ps: function () {
+        if (this.ids.length === 0) {
           this.$message.error('至少选择一条数据！');
-        }else{
+        } else {
           this.todelete(this.ids);
         }
       },
 
       //添加
-      toadd:function () {
+      toadd: function () {
         this.userInfo = {};
         this.userInfo.sex = "1";
         this.imageUrl = "";
@@ -264,37 +300,37 @@
       },
 
       //修改
-      toupdate:function(data){
+      toupdate: function (data) {
         this.userInfo = data;
         this.userInfo.sex = data.sex.toString();
-        this.userInfo.password = data.password.substring(0,10);
+        this.userInfo.password = data.password.substring(0, 10);
         this.flag = true;
-        this.imageUrl = "http://localhost:9999/"+data.url;
+        this.imageUrl = "http://localhost:9999/" + data.url;
       },
 
       //保存
-      save:function () {
+      save: function () {
         this.flag = false;
-        let uri = this.domain.serverpath+"user/addUser";
-        if(this.userInfo.id!==undefined){
-          uri = this.domain.serverpath+"user/updateUser"
+        let uri = this.domain.serverpath + "user/addUser";
+        if (this.userInfo.id !== undefined) {
+          uri = this.domain.serverpath + "user/updateUser"
         }
-        this.$axios.post(uri,this.userInfo).then((response)=>{
-          if(uri.endsWith("addUser")&&response.data){
+        this.$axios.post(uri, this.userInfo).then((response) => {
+          if (uri.endsWith("addUser") && response.data) {
             this.$message({
               message: '添加成功！',
               type: 'success'
             });
             this.pageAll(1);
-          }else if(uri.endsWith("updateUser")&&response.data){
+          } else if (uri.endsWith("updateUser") && response.data) {
             this.$message({
               message: '修改成功！',
               type: 'success'
             });
             this.pageAll(1);
           }
-        }).catch((response)=>{
-          if(response.data===undefined&&uri.endsWith("updateUser")){
+        }).catch((response) => {
+          if (response.data === undefined && uri.endsWith("updateUser")) {
             this.$notify.error({
               title: '错误',
               message: '您没有此项权限！'
@@ -311,34 +347,54 @@
       },
 
       //绑定角色
-      tobind:function (data) {
+      tobind: function (data) {
         this.roleId = '';
-        if(data.roleInfo!==null){
+        if (data.roleInfo !== null) {
           this.roleId = data.roleInfo.id;
         }
         this.userId = data.id;
         this.flag1 = true;
       },
-      
+
       //绑定成功
-      save1:function () {
+      save1: function () {
         this.flag1 = false;
-        this.$axios.post(this.domain.serverpath+'role/bindRole?userId='+this.userId+'&roleId='+this.roleId).then((response)=>{
-          if(response.data){
+        this.$axios.post(this.domain.serverpath + 'role/bindRole?userId=' + this.userId + '&roleId=' + this.roleId).then((response) => {
+          if (response.data) {
             this.$message({
               message: '绑定成功！',
               type: 'success'
             });
           }
           this.pageAll(1);
-        }).catch((response)=>{
-          if(response.data===undefined){
+        }).catch((response) => {
+          if (response.data === undefined) {
             this.$notify.error({
               title: '错误',
               message: '您没有此项权限！'
             });
           }
         })
+      },
+
+      exportUser: function () {
+
+        this.$axios.post(this.domain.serverpath + 'user/uploadUser', this.queryEntity).then((response) => {
+          if (response.data) {
+            this.$message({
+              message: '导出成功！',
+              type: 'success'
+            });
+          }
+        }).catch((response) => {
+          if (response.data === undefined) {
+            this.$notify.error({
+              title: '错误',
+              message: '您没有此项权限！'
+            });
+          }
+        })
+
       }
 
 
@@ -360,9 +416,11 @@
     position: relative;
     overflow: hidden;
   }
+
   .avatar-uploader .el-upload:hover {
     border-color: #409EFF;
   }
+
   .avatar-uploader-icon {
     font-size: 28px;
     color: #8c939d;
@@ -371,6 +429,7 @@
     line-height: 178px;
     text-align: center;
   }
+
   .avatar {
     width: 178px;
     height: 178px;
