@@ -4,49 +4,70 @@
       <div>
          <p class="p-title">LCG我爱编码,蛟龙在线,欢迎点评</p>
       </div>
+
         <div class="ms-login">
           <div class="ms-title">
              欢迎使用
           </div>
-          <el-form :model="ruleForm" :rules="rules" ref="ruleForm" label-width="0px" class="ms-content">
-            <el-form-item prop="username">
-              <el-input v-model="ruleForm.username" placeholder="请输入用户名">
-                <el-button slot="prepend" icon="iconfont icon-guanliyuanrenzheng"></el-button>
-              </el-input>
-            </el-form-item>
-            <el-form-item  prop="password">
-              <el-input type="password" placeholder="请输入认证密码" v-model="ruleForm.password" @keyup.enter.native="submitForm('ruleForm')">
-                <el-button slot="prepend" icon="iconfont icon-yuechi"></el-button>
-              </el-input>
-            </el-form-item>
+          <el-tabs type="border-card">
+            <el-tab-pane label="密码登录">
+              <el-form :model="ruleForm" :rules="rules" ref="ruleForm" label-width="0px" class="ms-content">
+                <el-form-item prop="username">
+                  <el-input v-model="ruleForm.username" placeholder="请输入用户名">
+                    <el-button slot="prepend" icon="iconfont icon-guanliyuanrenzheng"></el-button>
+                  </el-input>
+                </el-form-item>
+                <el-form-item  prop="password">
+                  <el-input type="password" placeholder="请输入认证密码" v-model="ruleForm.password" @keyup.enter.native="submitForm('ruleForm')">
+                    <el-button slot="prepend" icon="iconfont icon-yuechi"></el-button>
+                  </el-input>
+                </el-form-item>
 
-            <el-form-item prop="code">
-              <div class="form-inline-input">
-                <div class="code-box" id="code-box">
-                  <label>
-                    <input ref="coderef" type="text" name="code" class="code-input" />
-                  </label>
-                  <p></p>
-                  <span style="color:#909399">
+                <el-form-item prop="code">
+                  <div class="form-inline-input">
+                    <div class="code-box" id="code-box">
+                      <label>
+                        <input ref="coderef" type="text" name="code" class="code-input" />
+                      </label>
+                      <p></p>
+                      <span style="color:#909399">
                      拖动验证
                   </span>
+                    </div>
+                  </div>
+                </el-form-item>
+                <div class="login-btn">
+                  <el-button type="primary" @click="submitForm('ruleForm')">登录</el-button>
+                  <el-checkbox v-model="remember" style="background-color: white" @change="rememberfun" >记住密码</el-checkbox>
+                  <el-checkbox v-model="seven" style="background-color: white" @change="sevenfun" >7天免登陆</el-checkbox>
                 </div>
-              </div>
-            </el-form-item>
+                <!-- 登录进度 -->
+                <el-progress ref="jindu" :style="jindustyle"  :text-inside="true"
+                             :stroke-width="18"
+                             :percentage="percent"
+                             status="success"></el-progress>
 
+              </el-form>
+            </el-tab-pane>
+            <el-tab-pane label="手机验证码登录">
+              <el-form :model="ruleForm" :rules="rules" ref="ruleForm" label-width="0px" class="ms-content">
+                <el-form-item prop="tel">
+                  <el-input v-model="tel" placeholder="请输入电话号" :disabled="disabled1">
+                    <el-button slot="prepend" icon="el-icon-phone"></el-button>
+                  </el-input>
+                </el-form-item>
+                <el-form-item prop="checkcode">
+                  <el-input v-model="checkcode" placeholder="请输入验证码">
+                    <el-button slot="append" @click="getCode" :disabled="disabled2">{{btnTitle}}</el-button>
+                  </el-input>
+                </el-form-item>
+                <div class="login-btn">
+                  <el-button type="primary" @click="submitFormTel">登录</el-button>
+                </div>
 
-            <div class="login-btn">
-              <el-button type="primary" @click="submitForm('ruleForm')">登录</el-button>
-              <el-checkbox v-model="remember" style="background-color: white" @change="rememberfun" >记住密码</el-checkbox>
-              <el-checkbox v-model="seven" style="background-color: white" @change="sevenfun" >7天免登陆</el-checkbox>
-            </div>
-            <!-- 登录进度 -->
-            <el-progress ref="jindu" :style="jindustyle"  :text-inside="true"
-                         :stroke-width="18"
-                         :percentage="percent"
-                         status="success"></el-progress>
-
-          </el-form>
+              </el-form>
+            </el-tab-pane>
+          </el-tabs>
         </div>
 
 
@@ -62,6 +83,12 @@
         name: "login",
         data(){
          return{
+           tel: "",
+           checkcode: "",
+           btnTitle:"获取验证码",
+           timer: null,
+           disabled1:false,
+           disabled2:false,
            remember: false,
            seven: false,
            divimg:{//背景图片的使用
@@ -93,13 +120,54 @@
       methods:{
 
         sevenfun:function(){
-          if(this.seven){
 
-          }
         },
 
         rememberfun:function(){
 
+        },
+
+        //倒计时
+        getCode() {
+          if(this.tel.length===0){
+            this.$message.error('手机号不能为空！');
+          }else{
+            this.$axios.post(this.domain.ssoserverpath+"sendTel?tel="+this.tel).then((response)=>{
+              if(response.data){
+                this.$message({
+                  message: '验证码发送成功！',
+                  type: 'success'
+                });
+                this.disabled1 = true;
+                let time = 10;
+                let timer = setInterval(() => {
+                  if(time === 0) {
+                    clearInterval(timer);
+                    this.disabled2 = false;
+                    this.disabled1 = false;
+                    this.btnTitle = "获取验证码";
+                  } else {
+                    this.btnTitle =time + '秒后重试';
+                    this.disabled2 = true;
+                    time--
+                  }
+                },1000)
+              }else{
+                this.$message.error('验证码发送失败！');
+              }
+            }).catch(()=>{});
+          }
+        },
+
+        //手机号登录
+        submitFormTel() {
+          this.$axios.post(this.domain.ssoserverpath+"sendCode?telCode="+this.checkcode+"&tel="+this.tel).then((response)=>{
+            // alert(response.data.code);
+            this.$store.state.token=response.data.token;
+            //存储登录用户信息到vuex中
+            this.$store.state.userInfo=response.data.result;
+            this.$router.push({path:'/view/shouye/index'});
+          }).catch(()=>{})
         },
 
         //提交表单
