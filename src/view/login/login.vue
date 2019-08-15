@@ -37,6 +37,8 @@
 
             <div class="login-btn">
               <el-button type="primary" @click="submitForm('ruleForm')">登录</el-button>
+              <el-checkbox v-model="remember" style="background-color: white" @change="rememberfun" >记住密码</el-checkbox>
+              <el-checkbox v-model="seven" style="background-color: white" @change="sevenfun" >7天免登陆</el-checkbox>
             </div>
             <!-- 登录进度 -->
             <el-progress ref="jindu" :style="jindustyle"  :text-inside="true"
@@ -53,10 +55,15 @@
 </template>
 
 <script>
+
+    import {setCookie,getCookie} from "../../util/cookie";
+
     export default {
         name: "login",
         data(){
          return{
+           remember: false,
+           seven: false,
            divimg:{//背景图片的使用
              backgroundImage:"url(" + require('../../assets/yun.jpg') + ")",
              backgroundRepeat: "no-repeat",
@@ -85,8 +92,18 @@
         },
       methods:{
 
+        sevenfun:function(){
+          if(this.seven){
+
+          }
+        },
+
+        rememberfun:function(){
+
+        },
+
         //提交表单
-        submitForm(ruleid){
+        submitForm(){
            let code=this.$refs.coderef.value;
            if(code==null||code===""){
              const h = this.$createElement;
@@ -139,6 +156,10 @@
                  this.$store.state.token=response.data.token;
                  //存储登录用户信息到vuex中
                  this.$store.state.userInfo=response.data.result;
+                 if(this.seven){
+                   setCookie('username',this.ruleForm.username,7);
+                   setCookie('password',this.ruleForm.password,7);
+                 }
                  //本地session存储，防止刷新页面后信息丢失
                  //window.sessionStorage.setItem("userInfo",JSON.stringify(response.data.result));
                  //关闭加载窗
@@ -286,9 +307,17 @@
         this.$axios.post(this.domain.ssoserverpath+'getCode').then((response)=>{
           code=response.data.result;
           //页面获取code码，滑动生效
-          _this.moveCode(code,_this);
+          if(getCookie('username')!==null){
+            this.$refs.coderef.value = response.data.result;
+            this.ruleForm.username = getCookie('username');
+            this.ruleForm.password = getCookie('password');
+            this.submitForm();
+          }else{
+            _this.moveCode(code,_this);
+          }
         }).catch((error)=>{
         });
+        //console.log(getCookie('username')===null);
       }
 
     }

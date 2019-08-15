@@ -37,6 +37,9 @@
           <div slot="header" class="clearfix">
             <span style="font-weight:bold">汇总统计</span>
 
+            <!-- 每日登录人数统计折线图 -->
+            <div id="main" style="width: 600px;height: 400px;"></div>
+
           </div>
           <div class="text item">
             内容
@@ -113,16 +116,93 @@
 </template>
 
 <script>
+
+    import echarts from 'echarts'
+
     export default {
         name: "system",
+
         data(){
           return{
             closable:false,
             styleel:{
               left:'200%'
             },
+
+            charts: '',
+            opinion: [],
+            opinionData: []
+
           }
+        },
+
+      methods: {
+
+        drawLine(id) {
+          this.charts = echarts.init(document.getElementById(id));
+          this.charts.setOption({
+            tooltip: {
+              trigger: 'axis'
+            },
+            legend: {
+              data: ['今日登陆人数']
+            },
+            grid: {
+              left: '3%',
+              right: '4%',
+              bottom: '3%',
+              containLabel: true
+            },
+
+            toolbox: {
+              feature: {
+                saveAsImage: {}
+              }
+            },
+            xAxis: {
+              type: 'category',
+              boundaryGap: false,
+              data: this.opinion
+
+            },
+            yAxis: {
+              type: 'value'
+            },
+
+            series: [{
+              name: '今日登陆人数',
+              type: 'line',
+              stack: '总数',
+              data: this.opinionData
+            }]
+          })
         }
+
+
+
+      },
+
+      //调用
+      mounted() {
+
+        this.$axios.post(this.domain.ssoserverpath+'chart').then((rese)=>{
+
+          this.opinion = rese.data.heng;
+
+          this.opinionData = rese.data.zong;
+
+          this.$nextTick(function() {
+
+            this.drawLine('main')
+
+          });
+
+        }).catch((rese)=>{});
+
+
+
+      }
+
     }
 </script>
 
@@ -145,4 +225,11 @@
   .box-card {
     width:99.5%;
   }
+
+  * {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
 </style>

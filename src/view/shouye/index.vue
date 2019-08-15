@@ -83,6 +83,7 @@
 
   import mymenu from './datamenu.vue'
   import mymain from './datamain.vue'
+  import {delCookie} from "../../util/cookie";
 
   export default {
 
@@ -122,6 +123,8 @@
           if(confirm("确认退出？")){
             this.$router.push('/');
             this.$store.state.token = "";
+            delCookie('password');
+            delCookie('username');
           }
         }else if(data==="c"){//首页
 

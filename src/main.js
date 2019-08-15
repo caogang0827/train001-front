@@ -44,7 +44,6 @@ router.beforeEach((to, from, next) => {
 
 });
 
-
 //请求拦截器
 axios.interceptors.request.use((config) => {
   if (config.url.includes("getCode")) {//如果是获取验证码的路径
