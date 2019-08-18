@@ -6,7 +6,8 @@ Vue.use(Vuex);
 const store=new Vuex.Store({
   state:sessionStorage.getItem("state") ? JSON.parse(sessionStorage.getItem("state")) : {
     token:"",
-    userInfo:{}
+    userInfo:{},
+    authormap:{}
   }
 });
 

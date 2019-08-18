@@ -26,6 +26,10 @@
           <el-input v-model="userInfo.tel" autocomplete="off"></el-input>
         </el-form-item>
 
+        <el-form-item label="邮箱" :label-width="formLabelWidth" prop="email">
+          <el-input v-model="userInfo.email" autocomplete="off"></el-input>
+        </el-form-item>
+
         <el-form-item label="性别" :label-width="formLabelWidth" prop="sex">
           <el-select v-model="userInfo.sex" placeholder="请选择性别">
             <el-option label="男" :value="1"></el-option>
@@ -113,9 +117,9 @@
       <el-option label="全部" value=""></el-option>
       </el-select>&nbsp;
       <el-button type="primary" size="small" @click="find">查询</el-button>
-      <el-button type="primary" size="small" @click="toadd">添加用户</el-button>
-      <el-button type="danger" size="small" @click="ps">批量删除</el-button>
-      <el-button type="primary" size="small" @click="exportUser" style="float: left;margin-top: 15px;margin-left: 20px"><i class="el-icon-upload2"></i> 导出数据</el-button>
+      <el-button type="primary" size="small" @click="toadd" v-show="addbutton">添加用户</el-button>
+      <el-button type="danger" size="small" @click="ps" v-show="deletebutton">批量删除</el-button>
+      <el-button type="primary" size="small" @click="exportUser" style="float: left;margin-top: 15px;margin-left: 20px" v-show="exportbutton"><i class="el-icon-upload2"></i> 导出数据</el-button>
       <!--    <el-button type="primary"  size="small" @click="importUser"><i class="el-icon-download"></i>导入数据</el-button>-->
       <el-upload
         class="upload-demo"
@@ -128,7 +132,7 @@
         :limit="3"
         :on-exceed="handleExceed"
         :file-list="fileList">
-        <el-button size="small" type="primary" style="float: left;margin-left: 20px;margin-top: 15px"><i class="el-icon-download"></i> 导入数据</el-button>
+        <el-button size="small" type="primary" style="float: left;margin-left: 20px;margin-top: 15px" v-show="importbutton"><i class="el-icon-download"></i> 导入数据</el-button>
       </el-upload>
     </span>
     <!--  表格以上查询输入框、按钮end  -->
@@ -162,6 +166,7 @@
               <span v-if="scope.row.sex==0">女</span>
             </p>
             <p>电  话: {{ scope.row.tel}}</p>
+            <p>邮  箱: {{ scope.row.email}}</p>
             <p>角  色: {{ scope.row.roleInfo ? scope.row.roleInfo.rolename : "未绑定" }}</p>
             <div slot="reference" class="name-wrapper">
               <el-tag size="medium">{{ scope.row.username }}</el-tag>
@@ -203,7 +208,16 @@
         width="100"
       >
         <template slot-scope="scope">
-          <el-image style="width: 50px; height: 50px" :src="'http://localhost:9999/'+scope.row.url">{{scope.row.url}}</el-image>
+          <el-popover trigger="hover" placement="top">
+
+            <!--<el-image  :src="'http://49.232.19.36:8888/group1/'+scope.row.url+'_50x50.png'"></el-image>-->
+
+            <el-image style="width: 600px; height: 600px" :src="'http://localhost:9999/'+scope.row.url">{{scope.row.url}}</el-image>
+
+            <div slot="reference" class="name-wrapper">
+              <el-image style="width: 50px; height: 50px" :src="'http://localhost:9999/'+scope.row.url">{{scope.row.url}}</el-image>
+            </div>
+          </el-popover>
         </template>
       </el-table-column>
 
@@ -219,9 +233,9 @@
         width="370"
       >
         <template slot-scope="scope">
-          <el-button type="danger" round size="small" @click="todelete(scope.row.id)">删除</el-button>
-          <el-button type="primary" round size="small" @click="toupdate(scope.row)">编辑</el-button>
-          <el-button type="success" round size="small" @click="tobind(scope.row)">绑定角色</el-button>
+          <el-button type="danger" round size="small" @click="todelete(scope.row.id)" v-show="deletebutton">删除</el-button>
+          <el-button type="primary" round size="small" @click="toupdate(scope.row)" v-show="updatebutton">编辑</el-button>
+          <el-button type="success" round size="small" @click="tobind(scope.row)" v-show="bindbutton">绑定角色</el-button>
         </template>
       </el-table-column>
 
@@ -341,6 +355,10 @@
           tel: [
             { required: true, message: '请输入电话号', trigger: 'blur' },
             { pattern: /^1[3456789]\d{9}$/, message: '请输入正确的手机号' }
+          ],
+          email: [
+            { required: true, message: '请输入邮箱地址', trigger: 'blur' },
+            { pattern: /\w+([-+.]\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*/, message: '请输入正确的邮箱地址' }
           ],
         },
 
@@ -563,6 +581,24 @@
     mounted() {
       this.pageAll(1);
       this.findAllRole();
+      if(this.$store.state.authormap['/user/addUser']===""){
+        this.addbutton = true;
+      }
+      if(this.$store.state.authormap['/user/deleteUser']===""){
+        this.deletebutton = true;
+      }
+      if(this.$store.state.authormap['/user/importUser']===""){
+        this.importbutton = true;
+      }
+      if(this.$store.state.authormap['/user/uploadUser']===""){
+        this.exportbutton = true;
+      }
+      if(this.$store.state.authormap['/user/updateUser']===""){
+        this.updatebutton = true;
+      }
+      if(this.$store.state.authormap['/role/bindRole']===""){
+        this.bindbutton = true;
+      }
     }
 
   }

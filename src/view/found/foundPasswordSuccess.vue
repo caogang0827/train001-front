@@ -145,7 +145,7 @@
           if (valid) {
             alert('开始重置!');
             this.userId = this.Cookies.get("userId");
-            this.$axios.post(this.domain.ssoserverpath+"sendEmailRestat?userId="+this.userId+"&password="+this.ruleForm.checkPass).then((response)=>{
+            this.$axios.post(this.domain.ssoserverpath+"sendEmailRestat",{userId:this.userId,password:this.ruleForm.checkPass}).then((response)=>{
               if(response.data.code===200){
                 this.$message({
                   message: '密码重置成功！',

@@ -137,7 +137,7 @@
           if(this.tel.length===0){
             this.$message.error('手机号不能为空！');
           }else{
-            this.$axios.post(this.domain.ssoserverpath+"sendTel?tel="+this.tel).then((response)=>{
+            this.$axios.post(this.domain.ssoserverpath+"sendTel",{tel:this.tel}).then((response)=>{
               if(response.data){
                 this.$message({
                   message: '验证码发送成功！',
@@ -166,7 +166,7 @@
 
         //手机号登录
         submitFormTel() {
-          this.$axios.post(this.domain.ssoserverpath+"sendCode?telCode="+this.checkcode+"&tel="+this.tel).then((response)=>{
+          this.$axios.post(this.domain.ssoserverpath+"sendCode",{telCode:this.checkcode,tel:this.tel}).then((response)=>{
             // alert(response.data.code);
             if(response.data.code===404){
               this.$message({
@@ -241,6 +241,7 @@
                  this.$store.state.token=response.data.token;
                  //存储登录用户信息到vuex中
                  this.$store.state.userInfo=response.data.result;
+                 this.$store.state.authormap=response.data.result.authormap;
                  if(this.seven){
                    setCookie('username',this.ruleForm.username,7);
                    setCookie('password',this.ruleForm.password,7);

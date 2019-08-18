@@ -35,8 +35,8 @@
   <el-input v-model="iname" placeholder="请输入内容" style="width: 300px"></el-input>
     &nbsp;
     <el-button type="primary"  size="small" @click="find">查询</el-button>
-    <el-button type="primary"  size="small" @click="toadd">添加角色</el-button>
-    <el-button type="danger"  size="small" @click="ps">批量删除</el-button>
+    <el-button type="primary"  size="small" @click="toadd" v-show="addbutton">添加角色</el-button>
+    <el-button type="danger"  size="small" @click="ps" v-show="deletebutton">批量删除</el-button>
   </span>
     <el-table
       :data="tableData"
@@ -52,6 +52,16 @@
         prop="rolename"
         label="角色名称"
         width="350">
+        <template slot-scope="scope">
+          <el-popover trigger="hover" placement="top">
+            <p>角色名: {{ scope.row.rolename }}</p>
+            <p>角色描述: {{ scope.row.description }}</p>
+            <p>用 户: {{ scope.row.users}}</p>
+            <div slot="reference" class="name-wrapper">
+              <el-tag size="medium">{{ scope.row.rolename }}</el-tag>
+            </div>
+          </el-popover>
+        </template>
       </el-table-column>
       <el-table-column
         prop="description"
@@ -62,8 +72,8 @@
         label="操作"
         width="430">
         <template slot-scope="scope">
-          <el-button type="danger" round size="small" @click="todelete(scope.row.id)">删除</el-button>
-          <el-button type="primary" round size="small" @click="toupdate(scope.row)">编辑</el-button>
+          <el-button type="danger" round size="small" @click="todelete(scope.row.id)" v-show="deletebutton">删除</el-button>
+          <el-button type="primary" round size="small" @click="toupdate(scope.row)" v-show="updatebutton">编辑</el-button>
         </template>
       </el-table-column>
     </el-table>
@@ -242,6 +252,15 @@
     mounted() {
       this.findAllMenu();
       this.pageAll(1);
+      if(this.$store.state.authormap['/role/deleteRole']===""){
+        this.deletebutton = true;
+      }
+      if(this.$store.state.authormap['/role/updateRole']===""){
+        this.updatebutton = true;
+      }
+      if(this.$store.state.authormap['/role/addRole']===""){
+        this.addbutton = true;
+      }
     }
 
   }

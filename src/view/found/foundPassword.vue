@@ -127,7 +127,7 @@
         this.$refs[formName].validate((valid) => {
           if (valid) {
             alert('发送邮件!');
-            this.$axios.post(this.domain.ssoserverpath+"sendEmail?email="+this.dynamicValidateForm.email).then((response)=>{
+            this.$axios.post(this.domain.ssoserverpath+"sendEmail",{email:this.dynamicValidateForm.email}).then((response)=>{
               if(response.data.code===404){
                 this.$message({
                   message: '用户不存在！',
