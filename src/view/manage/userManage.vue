@@ -1,27 +1,39 @@
 <template>
   <div style="margin-top: 10px">
 
-    <el-dialog title="用户信息" :visible.sync="flag" style="width: 1400px">
-      <el-form :model="userInfo">
-        <el-form-item label="用户名" :label-width="formLabelWidth">
-          <el-input v-model="userInfo.username" autocomplete="off" style="width: 200px"></el-input>
+    <!--  添加、修改用户模态框start  -->
+    <el-dialog title="用户信息" :visible.sync="flag">
+
+      <el-form :model="userInfo" :rules="rules" ref="userInfo" style="width: 600px" label-width="100px" class="demo-ruleForm">
+
+        <el-form-item label="用户名" :label-width="formLabelWidth" prop="username">
+          <el-input v-model="userInfo.username" autocomplete="off"></el-input>
         </el-form-item>
-        <el-form-item label="登录名" :label-width="formLabelWidth">
-          <el-input v-model="userInfo.loginname" autocomplete="off" style="width: 200px"></el-input>
+
+        <el-form-item label="登录名" :label-width="formLabelWidth" prop="loginname">
+          <el-input v-model="userInfo.loginname" autocomplete="off"></el-input>
         </el-form-item>
-        <el-form-item label="登录密码" :label-width="formLabelWidth">
-          <el-input v-model="userInfo.password" autocomplete="off" type="password" style="width: 200px"></el-input>
+
+        <el-form-item label="登录密码" :label-width="formLabelWidth" prop="password">
+          <el-input v-model="userInfo.password" autocomplete="off" type="password"></el-input>
         </el-form-item>
-        <el-form-item label="电话" :label-width="formLabelWidth">
-          <el-input v-model="userInfo.tel" autocomplete="off" style="width: 200px"></el-input>
+
+        <el-form-item label="确认密码" :label-width="formLabelWidth" prop="rpassword">
+          <el-input type="password" v-model="userInfo.rpassword" autocomplete="off"></el-input>
         </el-form-item>
-        <el-form-item label="性别 " :label-width="formLabelWidth">
-          <el-select v-model="userInfo.sex" placeholder="请选择活动区域" style="width: 200px">
-            <el-option label="男" value="1"></el-option>
-            <el-option label="女" value="0"></el-option>
+
+        <el-form-item label="电话" :label-width="formLabelWidth" prop="tel">
+          <el-input v-model="userInfo.tel" autocomplete="off"></el-input>
+        </el-form-item>
+
+        <el-form-item label="性别" :label-width="formLabelWidth" prop="sex">
+          <el-select v-model="userInfo.sex" placeholder="请选择性别">
+            <el-option label="男" :value="1"></el-option>
+            <el-option label="女" :value="0"></el-option>
           </el-select>
         </el-form-item>
-        <el-form-item label="头像 " :label-width="formLabelWidth">
+
+        <el-form-item label="头像" :label-width="formLabelWidth" prop="url">
           <el-upload
             class="avatar-uploader"
             ref="addUpload"
@@ -33,16 +45,25 @@
             <i v-else class="el-icon-plus avatar-uploader-icon"></i>
           </el-upload>
         </el-form-item>
-      </el-form>
-      <div slot="footer" class="dialog-footer">
-        <el-button @click="flag = false">取 消</el-button>
-        <el-button type="primary" @click="save">确 定</el-button>
-      </div>
-    </el-dialog>
 
-    <el-dialog title="用户信息" :visible.sync="flag1" style="width: 1400px">
-      <el-form>
+      </el-form>
+
+      <div slot="footer" class="dialog-footer">
+        <el-button type="reset"  @click="resetForm('userInfo')">重 置</el-button>
+        <el-button @click="flag = false">取 消</el-button>
+        <el-button type="primary" @click="save('userInfo')">确 定</el-button>
+      </div>
+
+    </el-dialog>
+    <!--  添加、修改用户模态框end  -->
+
+    <!--  用户绑定角色模态框start  -->
+    <el-dialog title="用户信息" :visible.sync="flag1">
+
+      <el-form style="width: 600px">
+
         <el-form-item label="角色 " :label-width="formLabelWidth">
+
           <el-select v-model="roleId" filterable placeholder="请选择角色">
             <el-option
               v-for="role in roleList"
@@ -51,112 +72,163 @@
               :value="role.id">
             </el-option>
           </el-select>
+
         </el-form-item>
+
       </el-form>
+
       <div slot="footer" class="dialog-footer">
         <el-button @click="flag1 = false">取 消</el-button>
         <el-button type="primary" @click="save1">确 定</el-button>
       </div>
+
     </el-dialog>
+    <!--  添加、修改用户模态框start  -->
 
+    <!--  在线表格模态框start  -->
+    <!--    <el-dialog title="用户添加表格" :visible.sync="tableFlag" style="width: 1400px">-->
+    <!--    <iframe width="645" height="500"-->
+    <!--            style="border:1px solid #ccc" frameborder="0" scrolling="no"-->
+    <!--            src="https://docs.zoho.com.cn/sheet/published.do?rid=cp9nb2f685d96301a465ebe77034f931aaf2a&mode=embed"> -->
+    <!--    </iframe>-->
+    <!--    </el-dialog>-->
+    <!--  在线表格模态框end  -->
 
+    <!--  表格以上查询输入框、按钮start  -->
     <span style="margin-top: 10px;margin-bottom: 10px;margin-left: 20px">
-    用户名：
-  <el-input v-model="queryEntity.iname" placeholder="请输入内容" style="width: 150px"></el-input>
-  创建时间：
-  <el-date-picker
-    v-model="createdtime"
-    type="datetimerange"
-    range-separator="至"
-    start-placeholder="开始日期"
-    end-placeholder="结束日期">
-  </el-date-picker>
-  性别：
-    <el-select v-model="queryEntity.isex">
+      用户名：
+      <el-input v-model="queryEntity.iname" placeholder="请输入内容" style="width: 150px"></el-input>
+      创建时间：
+      <el-date-picker
+        v-model="createdtime"
+        type="datetimerange"
+        range-separator="至"
+        start-placeholder="开始日期"
+        end-placeholder="结束日期">
+      </el-date-picker>
+      性别：
+      <el-select v-model="queryEntity.isex">
       <el-option label="男" value="1"></el-option>
       <el-option label="女" value="0"></el-option>
       <el-option label="全部" value=""></el-option>
-    </el-select>
-    &nbsp;
-    <el-button type="primary" size="small" @click="find">查询</el-button>
-    <el-button type="primary" size="small" @click="toadd">添加用户</el-button>
-    <el-button type="danger" size="small" @click="ps">批量删除</el-button>
-    <el-button type="primary" size="small" @click="exportUser"><i class="el-icon-upload2"></i>导出数据</el-button>
+      </el-select>&nbsp;
+      <el-button type="primary" size="small" @click="find">查询</el-button>
+      <el-button type="primary" size="small" @click="toadd">添加用户</el-button>
+      <el-button type="danger" size="small" @click="ps">批量删除</el-button>
+      <el-button type="primary" size="small" @click="exportUser" style="float: left;margin-top: 15px;margin-left: 20px"><i class="el-icon-upload2"></i> 导出数据</el-button>
       <!--    <el-button type="primary"  size="small" @click="importUser"><i class="el-icon-download"></i>导入数据</el-button>-->
-    <el-upload
-      class="upload-demo"
-      action="http://localhost:10001/user/addExcel"
-      :on-preview="handlePreview"
-      :on-remove="handleRemove"
-      :before-remove="beforeRemove"
-      multiple
-      :on-success="handleSuccess"
-      :limit="3"
-      :on-exceed="handleExceed"
-      :file-list="fileList">
-      <el-button size="small" type="primary">导入数据</el-button>
-      <!--      <div slot="tip" class="el-upload__tip">只能上传jpg/png文件，且不超过500kb</div>-->
-    </el-upload>
+      <el-upload
+        class="upload-demo"
+        action="http://localhost:10001/user/addExcel"
+        :on-preview="handlePreview"
+        :on-remove="handleRemove"
+        :before-remove="beforeRemove"
+        multiple
+        :on-success="handleSuccess"
+        :limit="3"
+        :on-exceed="handleExceed"
+        :file-list="fileList">
+        <el-button size="small" type="primary" style="float: left;margin-left: 20px;margin-top: 15px"><i class="el-icon-download"></i> 导入数据</el-button>
+      </el-upload>
+    </span>
+    <!--  表格以上查询输入框、按钮end  -->
 
-  </span>
+    <!--  表格start  -->
     <el-table
       :data="tableData"
       height="520"
-      style="width: 100%;margin-top: 10px"
+      style="width: 100%;"
       @selection-change="handleSelectionChange"
     >
+
       <el-table-column
         type="selection"
-        width="80">
+        width="80"
+      >
       </el-table-column>
+
       <el-table-column
         prop="username"
-        label="用户名"
-        width="130">
+        label="用户名">
+        <template slot-scope="scope">
+          <el-popover trigger="hover" placement="top">
+            <p>
+              <el-avatar :src="'http://localhost:9999/'+scope.row.url"></el-avatar>
+            </p>
+            <p>用户名: {{ scope.row.username }}</p>
+            <p>登录名: {{ scope.row.loginname }}</p>
+            <p>性  别:
+              <span v-if="scope.row.sex==1">男</span>
+              <span v-if="scope.row.sex==0">女</span>
+            </p>
+            <p>电  话: {{ scope.row.tel}}</p>
+            <p>角  色: {{ scope.row.roleInfo ? scope.row.roleInfo.rolename : "未绑定" }}</p>
+            <div slot="reference" class="name-wrapper">
+              <el-tag size="medium">{{ scope.row.username }}</el-tag>
+            </div>
+          </el-popover>
+        </template>
       </el-table-column>
+
       <el-table-column
         prop="loginname"
         label="登录名"
-        width="130">
+        width="130"
+      >
       </el-table-column>
+
       <el-table-column
         label="性别"
-        width="80">
+        width="100"
+      >
         <template slot-scope="scope">{{ scope.row.sex==1?'男':'女'}}</template>
       </el-table-column>
+
       <el-table-column
         prop="tel"
         label="电话"
-        width="130">
+        width="130"
+      >
       </el-table-column>
+
       <el-table-column
         label="创建日期"
-        width="130">
+        width="130"
+      >
         <template slot-scope="scope">{{ scope.row.createdtime.substring(0,10)}}</template>
       </el-table-column>
+
       <el-table-column
         label="头像"
-        width="100">
+        width="100"
+      >
         <template slot-scope="scope">
-          <el-image style="width: 50px; height: 50px" :src="'http://localhost:9999/'+scope.row.url">{{scope.row.url}}
-          </el-image>
+          <el-image style="width: 50px; height: 50px" :src="'http://localhost:9999/'+scope.row.url">{{scope.row.url}}</el-image>
         </template>
       </el-table-column>
+
       <el-table-column
         prop="roleInfo.rolename"
         label="角色"
-        width="130">
+        width="130"
+      >
       </el-table-column>
+
       <el-table-column
         label="操作"
-        width="370">
+        width="370"
+      >
         <template slot-scope="scope">
           <el-button type="danger" round size="small" @click="todelete(scope.row.id)">删除</el-button>
           <el-button type="primary" round size="small" @click="toupdate(scope.row)">编辑</el-button>
           <el-button type="success" round size="small" @click="tobind(scope.row)">绑定角色</el-button>
         </template>
       </el-table-column>
+
     </el-table>
+    <!--  表格end  -->
+
+    <!--  分页start  -->
     <el-pagination
       background
       @size-change="handleSizeChange"
@@ -168,16 +240,45 @@
       :total="total"
       style="text-align: center">
     </el-pagination>
+    <!--  分页end  -->
+
   </div>
+
 </template>
 
 <script>
+
   export default {
+
     name: "userManage",
 
     data() {
+
+      //密码确认
+      const validatePass2 = (rule, value, callback) => {
+
+        if (value === '') {
+
+          callback(new Error('请再次输入密码'));
+
+        } else if (value !== this.formInline.password) {
+
+          callback(new Error('两次输入密码不一致!'));
+
+        } else {
+
+          callback();
+
+        }
+      };
+
+      //数据
       return {
+
+        //起止时间
         createdtime: ["", ""],
+
+        //查询实体
         queryEntity: {
           page: 0,
           pageSize: 3,
@@ -186,36 +287,88 @@
           start: "",
           end: "",
         },
+
+        //表格数据
         tableData: [],
+
+        //角色列表
         roleList: [],
+
+        //数据总条数
         total: 100,
+
+        //ID数组（批量删除用）
         ids: [],
+
+        //控制模态框显示/隐藏
         flag: false,
         flag1: false,
+        tableFlag: false,
+
+        //添加/修改对象
         userInfo: {},
-        formLabelWidth: '100px',
+
+        formLabelWidth: '80px',
+
+        //头像地址
         imageUrl: '',
+
+        //角色/用户ID（用户绑定角色使用）
         roleId: '',
         userId: '',
+
+        //上传文件列表
         fileList: [],
+
+        //表单验证
+        rules: {
+          username: [
+            { required: true, message: '请输入用户名', trigger: 'blur' },
+          ],
+          loginname: [
+            { required: true, message: '请输入登录名', trigger: 'blur' },
+          ],
+          sex: [
+            { required: true, message: '请至少选择一个',  trigger: 'blur' },
+          ],
+          password: [
+            { required: true, message: '请输入密码', trigger: 'blur' },
+          ],
+          rpassword: [
+            { required: true, message: '请输入密码', trigger: 'blur' },
+            { validator: validatePass2, trigger: 'blur' }
+          ],
+          tel: [
+            { required: true, message: '请输入电话号', trigger: 'blur' },
+            { pattern: /^1[3456789]\d{9}$/, message: '请输入正确的手机号' }
+          ],
+        },
+
+
       }
     },
 
     methods: {
 
-      //上传文件
+      //上传文件成功后返回
       handleSuccess(file, fileList) {
         console.log(file, fileList);
       },
+
+      //上传文件移除后返回
       handleRemove(file, fileList) {
         console.log(file, fileList);
       },
+
+      //上传文件前触发
       handlePreview(file) {
         console.log(file);
       },
       handleExceed(files, fileList) {
         this.$message.warning(`当前限制选择 3 个文件，本次选择了 ${files.length} 个文件，共选择了 ${files.length + fileList.length} 个文件`);
       },
+
+      //移除文件前触发
       beforeRemove(file, fileList) {
         return this.$confirm(`确定移除 ${file.name}？`);
       },
@@ -227,6 +380,11 @@
         }).catch(() => {
         })
       },
+
+      //在线表格展示
+      // hoverUsername(){
+      //   this.tableFlag = true;
+      // },
 
       //分页查询
       pageAll: function (page) {
@@ -244,23 +402,23 @@
         })
       },
 
-      //获取对象数组
+      //获取对象ID数组
       handleSelectionChange: function (data) {
         this.ids = data.map(element => element.id);
       },
 
-      //查询
+      //条件查询
       find: function () {
         this.pageAll(1);
       },
 
-      //分页条数改变
+      //分页条数改变查询
       handleSizeChange: function (data) {
         this.queryEntity.pageSize = data;
         this.pageAll(1);
       },
 
-      //删除
+      //删除方法
       todelete: function (id) {
         if (confirm("确认删除？")) {
           this.$axios.post(this.domain.serverpath + 'user/deleteUser?id=' + id).then((response) => {
@@ -291,25 +449,27 @@
         }
       },
 
-      //添加
+      //添加用户
       toadd: function () {
         this.userInfo = {};
-        this.userInfo.sex = "1";
         this.imageUrl = "";
         this.flag = true;
+        if(this.$refs.userInfo){
+          this.$refs.userInfo.resetFields();
+        }
       },
 
-      //修改
+      //修改用户
       toupdate: function (data) {
         this.userInfo = data;
-        this.userInfo.sex = data.sex.toString();
+        // this.userInfo.sex = data.sex.toString();
         this.userInfo.password = data.password.substring(0, 10);
         this.flag = true;
         this.imageUrl = "http://localhost:9999/" + data.url;
       },
 
       //保存
-      save: function () {
+      save: function (data) {
         this.flag = false;
         let uri = this.domain.serverpath + "user/addUser";
         if (this.userInfo.id !== undefined) {
@@ -343,7 +503,6 @@
       handleAvatarSuccess(res, file) {
         this.imageUrl = URL.createObjectURL(file.raw);
         this.userInfo.url = file.name;
-
       },
 
       //绑定角色
@@ -377,8 +536,8 @@
         })
       },
 
+      //导出用户数据
       exportUser: function () {
-
         this.$axios.post(this.domain.serverpath + 'user/uploadUser', this.queryEntity).then((response) => {
           if (response.data) {
             this.$message({
@@ -394,12 +553,13 @@
             });
           }
         })
+      },
 
-      }
 
 
     },
 
+    //预加载函数
     mounted() {
       this.pageAll(1);
       this.findAllRole();
@@ -415,6 +575,10 @@
     cursor: pointer;
     position: relative;
     overflow: hidden;
+  }
+
+  el-input{
+    width: 100px;
   }
 
   .avatar-uploader .el-upload:hover {

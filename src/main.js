@@ -49,8 +49,12 @@ axios.interceptors.request.use((config) => {
   if (config.url.includes("getCode")) {//如果是获取验证码的路径
     //没有Cookie的话添加Cookie
     let aucokie = Cookies.get("authcode");
+    let userId = Cookies.get("userId");
     if (aucokie == null) {
       Cookies.set("authcode", "", {path: "/", domain: "localhost", age: -1})
+    }
+    if (userId == null) {
+      Cookies.set("userId", "", {path: "/", domain: "localhost", age: -1})
     }
   } else {
     config.headers.token = store.state.token;

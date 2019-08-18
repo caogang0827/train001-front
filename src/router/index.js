@@ -9,6 +9,8 @@ import system from '@/view/shouye/system'
 import userManage from '@/view/manage/userManage'
 import roleManage from '@/view/manage/menuManage'
 import menuManage from '@/view/manage/roleManage'
+import foundPassword from '@/view/found/foundPassword'
+import foundPasswordSuccess from '@/view/found/foundPasswordSuccess'
 
 Vue.use(Router);
 
@@ -23,6 +25,26 @@ export default new Router({
     //   component: HelloWorld
     // },
 
+    //找回密码页面
+    {
+      path: '/view/found/foundPassword',
+      name: 'foundPassword',
+      component: foundPassword,
+      meta:{
+        require:false
+      }
+    },
+
+    //找回密码成功页面
+    {
+      path: '/view/found/foundPasswordSuccess',
+      name: 'foundPasswordSuccess',
+      component: foundPasswordSuccess,
+      meta:{
+        require:false
+      }
+    },
+
     //登录页面
     {
       path: '/',
@@ -32,6 +54,8 @@ export default new Router({
         require:false
       }
     },
+
+    //首页
     {
       path: '/view/shouye/index',
       name: 'index',
@@ -52,6 +76,8 @@ export default new Router({
         }
       ]
     },
+
+    //左侧功能区
     {
       path:"/datamenu",
       component:datamenu,

@@ -38,7 +38,8 @@
                 </el-form-item>
                 <div class="login-btn">
                   <el-button type="primary" @click="submitForm('ruleForm')">登录</el-button>
-                  <el-checkbox v-model="remember" style="background-color: white" @change="rememberfun" >记住密码</el-checkbox>
+                  <el-link @click="foundPassword">已有账号，忘记密码？</el-link><br>
+                  <el-checkbox v-model="remember" style="background-color: white;margin-top: 10px" @change="rememberfun" >记住密码</el-checkbox>
                   <el-checkbox v-model="seven" style="background-color: white" @change="sevenfun" >7天免登陆</el-checkbox>
                 </div>
                 <!-- 登录进度 -->
@@ -119,6 +120,10 @@
         },
       methods:{
 
+        foundPassword(){
+          this.$router.push({path:'/view/found/foundPassword'});
+        },
+
         sevenfun:function(){
 
         },
@@ -139,7 +144,7 @@
                   type: 'success'
                 });
                 this.disabled1 = true;
-                let time = 10;
+                let time = 60;
                 let timer = setInterval(() => {
                   if(time === 0) {
                     clearInterval(timer);
@@ -163,10 +168,22 @@
         submitFormTel() {
           this.$axios.post(this.domain.ssoserverpath+"sendCode?telCode="+this.checkcode+"&tel="+this.tel).then((response)=>{
             // alert(response.data.code);
-            this.$store.state.token=response.data.token;
-            //存储登录用户信息到vuex中
-            this.$store.state.userInfo=response.data.result;
-            this.$router.push({path:'/view/shouye/index'});
+            if(response.data.code===404){
+              this.$message({
+                message: '请先注册！',
+                type: 'success'
+              });
+            }else if(response.data.code===500){
+              this.$message.error('验证码错误！');
+            }else if(response.data.code===200){
+              this.$message({
+                message: '登录成功！',
+                type: 'success'
+              });
+              this.$store.state.token=response.data.token;
+              this.$store.state.userInfo=response.data.result;
+              this.$router.push({path:'/view/shouye/index'});
+            }
           }).catch(()=>{})
         },
 
