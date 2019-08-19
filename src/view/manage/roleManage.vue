@@ -2,12 +2,27 @@
   <div style="margin-top: 10px">
     <el-dialog title="角色信息" :visible.sync="flag" style="width: 1400px">
       <el-form :model="roleInfo">
+
         <el-form-item label="角色名称" :label-width="formLabelWidth">
-          <el-input v-model="roleInfo.rolename" autocomplete="off" style="width: 200px"></el-input>
+          <el-input v-model="roleInfo.rolename" autocomplete="off" style="width: 250px"></el-input>
         </el-form-item>
+
         <el-form-item label="角色描述" :label-width="formLabelWidth">
           <el-input type="textarea" v-model="roleInfo.description"></el-input>
         </el-form-item>
+
+        <el-form-item label="角色等级" :label-width="formLabelWidth">
+          <el-select v-model="roleInfo.level" filterable placeholder="请选择等级">
+            <el-option
+              v-for="role in roleList"
+              :key="role.id"
+              v-show="role.level > dlevel ? true : false"
+              :label="role.level"
+              :value="role.level">
+            </el-option>
+          </el-select>
+        </el-form-item>
+
         <el-form-item label="角色权限" :label-width="formLabelWidth">
           <el-tree
             :data="data"
@@ -72,7 +87,7 @@
         label="操作"
         width="430">
         <template slot-scope="scope">
-          <el-button type="danger" round size="small" @click="todelete(scope.row.id)" v-show="deletebutton">删除</el-button>
+          <el-button type="danger" round size="small" @click="todelete(scope.row)" v-show="deletebutton">删除</el-button>
           <el-button type="primary" round size="small" @click="toupdate(scope.row)" v-show="updatebutton">编辑</el-button>
         </template>
       </el-table-column>
@@ -100,10 +115,17 @@
         tableData: [],
         flag: false,
         iname: '',
-        ids: '',
+        ids: [],
         page: 1,
         pageSize: 3,
         total: 100,
+
+        //角色列表
+        roleList: [],
+
+        //登录用户角色等级
+        dlevel: 0,
+
         data: [],
         defaultProps: {
           children: 'menuInfoList',
@@ -125,7 +147,7 @@
 
       //获取对象数组
       handleSelectionChange: function (data) {
-        this.ids = data.map(element=>element.id);
+        this.ids = data.map(element=>element);
       },
 
       //查询
@@ -134,29 +156,36 @@
       },
 
       //删除
-      todelete:function (id) {
-        if (confirm("确认删除？")){
-          this.$axios.post(this.domain.serverpath+'role/deleteRole?id='+id).then((response)=>{
-            if(response.data===0){
-              this.$message({
-                message: '删除成功！',
-                type: 'success'
-              });
-              this.pageAll(1);
-            }else{
-              this.$notify.error({
-                title: '错误',
-                message: '还有'+response.data+'名用户！'
-              });
-            }
-          }).catch((response)=>{
-            if(response.data===undefined){
-              this.$notify.error({
-                title: '错误',
-                message: '您没有此项权限！'
-              });
-            }
-          })
+      todelete:function (data) {
+        if(data.level <= this.dlevel) {
+          this.$notify.error({
+            title: '错误',
+            message: '您的等级不足！'
+          });
+        }else{
+          if (confirm("确认删除？")){
+            this.$axios.post(this.domain.serverpath+'role/deleteRole?id='+id).then((response)=>{
+              if(response.data===0){
+                this.$message({
+                  message: '删除成功！',
+                  type: 'success'
+                });
+                this.pageAll(1);
+              }else{
+                this.$notify.error({
+                  title: '错误',
+                  message: '还有'+response.data+'名用户！'
+                });
+              }
+            }).catch((response)=>{
+              if(response.data===undefined){
+                this.$notify.error({
+                  title: '错误',
+                  message: '您没有此项权限！'
+                });
+              }
+            })
+          }
         }
       },
 
@@ -165,7 +194,9 @@
         if(this.ids.length===0){
           this.$message.error('至少选择一条数据！');
         }else{
-          this.todelete(this.ids);
+          this.ids.forEach(item=>{
+            this.todelete(item);
+          })
         }
       },
       
@@ -177,11 +208,18 @@
       },
       
       toupdate:function (data) {
-        this.flag = true;
-        this.roleInfo = data;
-        setTimeout(()=>{
-          this.$refs.tree.setCheckedKeys(data.authKeys);
-        },0)
+        if(data.level <= this.dlevel){
+          this.$notify.error({
+            title: '错误',
+            message: '您的等级不足！'
+          });
+        }else{
+          this.flag = true;
+          this.roleInfo = data;
+          setTimeout(()=>{
+            this.$refs.tree.setCheckedKeys(data.authKeys);
+          },0)
+        }
       },
       
       save:function () {
@@ -247,11 +285,21 @@
         }).catch(()=>{})
       },
 
+      //查询所有角色
+      findAllRole: function () {
+        this.$axios.post(this.domain.serverpath + 'role/listRole?find=1').then((response) => {
+          this.roleList = response.data.content;
+        }).catch(() => {
+        })
+      },
+
     },
 
     mounted() {
       this.findAllMenu();
       this.pageAll(1);
+      this.findAllRole();
+      this.dlevel = this.$store.state.userInfo.roleInfo.level;
       if(this.$store.state.authormap['/role/deleteRole']===""){
         this.deletebutton = true;
       }

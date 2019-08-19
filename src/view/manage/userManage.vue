@@ -72,6 +72,7 @@
             <el-option
               v-for="role in roleList"
               :key="role.id"
+              v-show="role.level > dlevel ? true : false"
               :label="role.rolename"
               :value="role.id">
             </el-option>
@@ -147,13 +148,15 @@
 
       <el-table-column
         type="selection"
-        width="80"
+        width="60"
       >
       </el-table-column>
 
       <el-table-column
         prop="username"
-        label="用户名">
+        label="用户名"
+        width="100"
+      >
         <template slot-scope="scope">
           <el-popover trigger="hover" placement="top">
             <p>
@@ -162,8 +165,8 @@
             <p>用户名: {{ scope.row.username }}</p>
             <p>登录名: {{ scope.row.loginname }}</p>
             <p>性  别:
-              <span v-if="scope.row.sex==1">男</span>
-              <span v-if="scope.row.sex==0">女</span>
+              <span v-if="scope.row.sex===1">男</span>
+              <span v-if="scope.row.sex===0">女</span>
             </p>
             <p>电  话: {{ scope.row.tel}}</p>
             <p>邮  箱: {{ scope.row.email}}</p>
@@ -179,15 +182,15 @@
       <el-table-column
         prop="loginname"
         label="登录名"
-        width="130"
+        width="110"
       >
       </el-table-column>
 
       <el-table-column
         label="性别"
-        width="100"
+        width="50"
       >
-        <template slot-scope="scope">{{ scope.row.sex==1?'男':'女'}}</template>
+        <template slot-scope="scope">{{ scope.row.sex===1?'男':'女'}}</template>
       </el-table-column>
 
       <el-table-column
@@ -225,16 +228,16 @@
       <el-table-column
         prop="roleInfo.rolename"
         label="角色"
-        width="130"
+        width="210"
       >
       </el-table-column>
 
       <el-table-column
         label="操作"
-        width="370"
+        width="410"
       >
         <template slot-scope="scope">
-          <el-button type="danger" round size="small" @click="todelete(scope.row.id)" v-show="deletebutton">删除</el-button>
+          <el-button type="danger" round size="small" @click="todelete(scope.row)" v-show="deletebutton">删除</el-button>
           <el-button type="primary" round size="small" @click="toupdate(scope.row)" v-show="updatebutton">编辑</el-button>
           <el-button type="success" round size="small" @click="tobind(scope.row)" v-show="bindbutton">绑定角色</el-button>
         </template>
@@ -276,7 +279,7 @@
 
           callback(new Error('请再次输入密码'));
 
-        } else if (value !== this.formInline.password) {
+        } else if (value !== this.userInfo.password) {
 
           callback(new Error('两次输入密码不一致!'));
 
@@ -308,6 +311,9 @@
 
         //角色列表
         roleList: [],
+
+        //登录用户角色等级
+        dlevel: 0,
 
         //数据总条数
         total: 100,
@@ -423,7 +429,7 @@
 
       //获取对象ID数组
       handleSelectionChange: function (data) {
-        this.ids = data.map(element => element.id);
+        this.ids = data.map(element => element);
       },
 
       //条件查询
@@ -438,24 +444,31 @@
       },
 
       //删除方法
-      todelete: function (id) {
-        if (confirm("确认删除？")) {
-          this.$axios.post(this.domain.serverpath + 'user/deleteUser?id=' + id).then((response) => {
-            if (response.data) {
-              this.$message({
-                message: '删除成功！',
-                type: 'success'
-              });
-            }
-            this.pageAll(1);
-          }).catch((response) => {
-            if (response.data === undefined) {
-              this.$notify.error({
-                title: '错误',
-                message: '您没有此项权限！'
-              });
-            }
-          })
+      todelete: function (data) {
+        if(data.roleInfo.level <= this.dlevel && data.id!==this.$store.state.userInfo.id){
+          this.$notify.error({
+            title: '错误',
+            message: '您的等级不足！'
+          });
+        }else{
+          if (confirm("确认删除？")) {
+            this.$axios.post(this.domain.serverpath + 'user/deleteUser?id=' + data.id).then((response) => {
+              if (response.data) {
+                this.$message({
+                  message: '删除成功！',
+                  type: 'success'
+                });
+              }
+              this.pageAll(1);
+            }).catch((response) => {
+              if (response.data === undefined) {
+                this.$notify.error({
+                  title: '错误',
+                  message: '您没有此项权限！'
+                });
+              }
+            })
+          }
         }
       },
 
@@ -464,7 +477,9 @@
         if (this.ids.length === 0) {
           this.$message.error('至少选择一条数据！');
         } else {
-          this.todelete(this.ids);
+          this.ids.forEach(item=>{
+            this.todelete(item);
+          })
         }
       },
 
@@ -473,18 +488,26 @@
         this.userInfo = {};
         this.imageUrl = "";
         this.flag = true;
-        if(this.$refs.userInfo){
-          this.$refs.userInfo.resetFields();
-        }
+        //if(this.$refs.userInfo){
+        //   this.$refs.userInfo.resetFields();
+        //}
+        //this.$refs[formName].resetFields();
       },
 
       //修改用户
       toupdate: function (data) {
-        this.flag = true;
-        this.userInfo = data;
-        this.userInfo.password = data.password.substring(0, 10);
-        this.userInfo.rpassword = data.password.substring(0, 10);
-        this.imageUrl = "http://localhost:9999/" + data.url;
+        if(data.roleInfo.level <= this.dlevel && data.id!==this.$store.state.userInfo.id){
+          this.$notify.error({
+            title: '错误',
+            message: '您的等级不足！'
+          });
+        }else{
+          this.flag = true;
+          this.userInfo = data;
+          this.userInfo.password = data.password.substring(0, 10);
+          this.userInfo.rpassword = data.password.substring(0, 10);
+          this.imageUrl = "http://localhost:9999/" + data.url;
+        }
       },
 
       //保存
@@ -596,6 +619,7 @@
     mounted() {
       this.pageAll(1);
       this.findAllRole();
+      this.dlevel = this.$store.state.userInfo.roleInfo.level;
       if(this.$store.state.authormap['/user/addUser']===""){
         this.addbutton = true;
       }
