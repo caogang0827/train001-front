@@ -11,6 +11,8 @@
 
           <div style="float:right">
             <el-dropdown @command="handleCommand">
+              <el-avatar :src="'http://localhost:9999/'+this.$store.state.userInfo.url" style="margin-top: 10px"></el-avatar>
+              <!--<el-image style="width: 40px; height: 40px;margin-top: 10px" :src="'http://localhost:9999/'+this.$store.state.userInfo.url"></el-image>-->
               <i class="el-icon-setting" style="margin-right: 15px"></i>
               <el-dropdown-menu slot="dropdown">
                 <el-dropdown-item command="c">首页</el-dropdown-item>
@@ -54,11 +56,12 @@
       width="40%"
     >
       <el-form  :inline="true" label-width="100px" class="demo-form-inline">
-        <el-form-item label="用户名:">{{this.$store.state.userInfo.userName}}</el-form-item>
-        <el-form-item label="登录名:">{{this.$store.state.userInfo.loginName}}</el-form-item>
-        <el-form-item label="性别:">{{this.$store.state.userInfo.sex===1?'男':'女'}}</el-form-item>
+        <el-form-item label="用户名:">{{this.$store.state.userInfo.username}}</el-form-item>
+        <el-form-item label="登录名:">{{this.$store.state.userInfo.loginname}}</el-form-item>
+        <el-form-item label="性 别:">{{this.$store.state.userInfo.sex===1?'男':'女'}}</el-form-item>
         <br>
-        <el-form-item label="电话:">{{this.$store.state.userInfo.tel}}</el-form-item>
+        <el-form-item label="电 话:">{{this.$store.state.userInfo.tel}}</el-form-item>
+        <el-form-item label="邮 箱:">{{this.$store.state.userInfo.email}}</el-form-item>
       </el-form>
 
       <span slot="footer" class="dialog-footer">

@@ -140,7 +140,7 @@
     <!--  表格start  -->
     <el-table
       :data="tableData"
-      height="520"
+      height="440"
       style="width: 100%;"
       @selection-change="handleSelectionChange"
     >
@@ -167,7 +167,8 @@
             </p>
             <p>电  话: {{ scope.row.tel}}</p>
             <p>邮  箱: {{ scope.row.email}}</p>
-            <p>角  色: {{ scope.row.roleInfo ? scope.row.roleInfo.rolename : "未绑定" }}</p>
+            <!--<p>角  色: {{ scope.row.roleInfo ? scope.row.roleInfo.rolename : "未绑定" }}</p>-->
+            角  色: <span style="font-weight: bolder;color: deeppink">{{ scope.row.roleInfo ? scope.row.roleInfo.rolename : "未绑定" }}</span>
             <div slot="reference" class="name-wrapper">
               <el-tag size="medium">{{ scope.row.username }}</el-tag>
             </div>
@@ -479,42 +480,53 @@
 
       //修改用户
       toupdate: function (data) {
-        this.userInfo = data;
-        // this.userInfo.sex = data.sex.toString();
-        this.userInfo.password = data.password.substring(0, 10);
         this.flag = true;
+        this.userInfo = data;
+        this.userInfo.password = data.password.substring(0, 10);
+        this.userInfo.rpassword = data.password.substring(0, 10);
         this.imageUrl = "http://localhost:9999/" + data.url;
       },
 
       //保存
-      save: function (data) {
+      save: function (userInfo) {
         this.flag = false;
-        let uri = this.domain.serverpath + "user/addUser";
-        if (this.userInfo.id !== undefined) {
-          uri = this.domain.serverpath + "user/updateUser"
-        }
-        this.$axios.post(uri, this.userInfo).then((response) => {
-          if (uri.endsWith("addUser") && response.data) {
-            this.$message({
-              message: '添加成功！',
-              type: 'success'
-            });
-            this.pageAll(1);
-          } else if (uri.endsWith("updateUser") && response.data) {
-            this.$message({
-              message: '修改成功！',
-              type: 'success'
-            });
-            this.pageAll(1);
-          }
-        }).catch((response) => {
-          if (response.data === undefined && uri.endsWith("updateUser")) {
+        this.$refs[userInfo].validate((valid) => {
+          if (valid) {
+            alert('submit!');
+            let uri = this.domain.serverpath + "user/addUser";
+            if (this.userInfo.id !== undefined) {
+              uri = this.domain.serverpath + "user/updateUser"
+            }
+            this.$axios.post(uri, this.userInfo).then((response) => {
+              if (uri.endsWith("addUser") && response.data) {
+                this.$message({
+                  message: '添加成功！',
+                  type: 'success'
+                });
+                this.pageAll(1);
+              } else if (uri.endsWith("updateUser") && response.data) {
+                this.$message({
+                  message: '修改成功！',
+                  type: 'success'
+                });
+                this.pageAll(1);
+              }
+            }).catch((response) => {
+              if (response.data === undefined && uri.endsWith("updateUser")) {
+                this.$notify.error({
+                  title: '错误',
+                  message: '您没有此项权限！'
+                });
+              }
+            })
+          } else {
             this.$notify.error({
               title: '错误',
-              message: '您没有此项权限！'
+              message: '用户数据不能为空！'
             });
+            return false;
           }
-        })
+        });
       },
 
       //图片添加成功
@@ -573,7 +585,10 @@
         })
       },
 
-
+      //重置表单
+      resetForm(userInfo) {
+        this.$refs[userInfo].resetFields();
+      }
 
     },
 

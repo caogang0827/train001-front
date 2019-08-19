@@ -56,7 +56,7 @@
           <el-popover trigger="hover" placement="top">
             <p>角色名: {{ scope.row.rolename }}</p>
             <p>角色描述: {{ scope.row.description }}</p>
-            <p>用 户: {{ scope.row.users}}</p>
+            用 户: <span style="font-weight: bolder;color: deeppink">{{ scope.row.users}}</span>
             <div slot="reference" class="name-wrapper">
               <el-tag size="medium">{{ scope.row.rolename }}</el-tag>
             </div>
