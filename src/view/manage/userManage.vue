@@ -234,12 +234,13 @@
 
       <el-table-column
         label="操作"
-        width="410"
+        width="390"
       >
         <template slot-scope="scope">
           <el-button type="danger" round size="small" @click="todelete(scope.row)" v-show="deletebutton">删除</el-button>
           <el-button type="primary" round size="small" @click="toupdate(scope.row)" v-show="updatebutton">编辑</el-button>
           <el-button type="success" round size="small" @click="tobind(scope.row)" v-show="bindbutton">绑定角色</el-button>
+          <el-button type="success" round size="small" @click="notbind(scope.row)" v-show="notbindbutton">解绑角色</el-button>
         </template>
       </el-table-column>
 
@@ -560,12 +561,51 @@
 
       //绑定角色
       tobind: function (data) {
-        this.roleId = '';
-        if (data.roleInfo !== null) {
-          this.roleId = data.roleInfo.id;
+        console.log(data.roleInfo);
+        if(data.roleInfo===null){
+          this.flag1 = true;
+          this.roleId = '';
+          this.userId = data.id;
+        }else{
+          if(data.roleInfo.level <= this.dlevel && data.id!==this.$store.state.userInfo.id){
+            this.$notify.error({
+              title: '错误',
+              message: '您的等级不足！'
+            });
+          }else{
+            this.flag1 = true;
+            this.roleId = '';
+            this.roleId = data.roleInfo.id;
+            this.userId = data.id;
+          }
         }
-        this.userId = data.id;
-        this.flag1 = true;
+      },
+
+      //解绑角色
+      notbind: function (data) {
+        if(data.roleInfo.level <= this.dlevel && data.id!==this.$store.state.userInfo.id){
+          this.$notify.error({
+            title: '错误',
+            message: '您的等级不足！'
+          });
+        }else{
+          this.$axios.post(this.domain.serverpath + 'role/notbindRole?userId=' + data.id).then((response) => {
+            if (response.data) {
+              this.$message({
+                message: '解绑成功！',
+                type: 'success'
+              });
+              this.pageAll(1);
+            }
+          }).catch((response) => {
+            if (response.data === undefined) {
+              this.$notify.error({
+                title: '错误',
+                message: '您没有此项权限！'
+              });
+            }
+          })
+        }
       },
 
       //绑定成功
@@ -577,8 +617,8 @@
               message: '绑定成功！',
               type: 'success'
             });
+            this.pageAll(1);
           }
-          this.pageAll(1);
         }).catch((response) => {
           if (response.data === undefined) {
             this.$notify.error({
@@ -637,6 +677,9 @@
       }
       if(this.$store.state.authormap['/role/bindRole']===""){
         this.bindbutton = true;
+      }
+      if(this.$store.state.authormap['/role/notbindRole']===""){
+        this.notbindbutton = true;
       }
     }
 

@@ -208,7 +208,7 @@
       },
       
       toupdate:function (data) {
-        if(data.level <= this.dlevel){
+        if(data.level < this.dlevel){
           this.$notify.error({
             title: '错误',
             message: '您的等级不足！'
@@ -229,28 +229,35 @@
         if(this.roleInfo.id!==undefined){
           uri = this.domain.serverpath+"role/updateRole"
         }
-        this.$axios.post(uri,this.roleInfo).then((response)=>{
-          if(uri.endsWith("addRole")&&response.data){
-            this.$message({
-              message: '添加成功！',
-              type: 'success'
-            });
-            this.pageAll(1);
-          }else if(uri.endsWith("updateRole")&&response.data){
-            this.$message({
-              message: '修改成功！',
-              type: 'success'
-            });
-            this.pageAll(1);
-          }
-        }).catch((response)=>{
-          if(response.data===undefined){
-            this.$notify.error({
-              title: '错误',
-              message: '您没有此项权限！'
-            });
-          }
-        })
+        if(uri.endsWith("updateRole") && this.roleInfo.level === this.dlevel){
+          this.$notify.error({
+            title: '错误',
+            message: '您的等级不足！'
+          });
+        }else{
+          this.$axios.post(uri,this.roleInfo).then((response)=>{
+            if(uri.endsWith("addRole")&&response.data){
+              this.$message({
+                message: '添加成功！',
+                type: 'success'
+              });
+              this.pageAll(1);
+            }else if(uri.endsWith("updateRole")&&response.data){
+              this.$message({
+                message: '修改成功！',
+                type: 'success'
+              });
+              this.pageAll(1);
+            }
+          }).catch((response)=>{
+            if(response.data===undefined){
+              this.$notify.error({
+                title: '错误',
+                message: '您没有此项权限！'
+              });
+            }
+          })
+        }
       },
 
       tobind:function () {
