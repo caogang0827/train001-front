@@ -41,7 +41,6 @@ router.beforeEach((to, from, next) => {
     } else {
       next();
     }
-
 });
 
 //请求拦截器
